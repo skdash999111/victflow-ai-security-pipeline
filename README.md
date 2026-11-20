@@ -1,23 +1,34 @@
-# victflow-ai-security-pipeline
-Automated LLM Red Teaming (NVIDIA Garak) and Local AI-Powered SARIF v2.1.0 Vulnerability Triage Engine
-# VictFlow AI Security & SARIF Triage Pipeline
+# VictFlow AI Security, Red Teaming & Runtime Firewall Pipeline
 
-An automated, zero-cost **AI Red Teaming & DevSecOps Triage Pipeline** designed to evaluate Large Language Model (LLM) endpoints for adversarial vulnerabilities, standardize findings into **SARIF v2.1.0**, and enrich security alerts using local structured-JSON AI triage.
+An end-to-end, zero-cost **AI Red Teaming, SARIF Triage & Runtime Guardrail Pipeline** built to evaluate Large Language Models (LLMs) against adversarial attacks, standardize findings into **SARIF v2.1.0**, enrich alerts via local AI triage, and enforce real-time input/output defenses via an OpenAI-compatible FastAPI security gateway.
 
-Built to extend unified **SAST (Semgrep)**, **SCA (Trivy)**, and **DAST (OWASP ZAP)** application security workflows into Generative AI and RAG systems.
+Engineered to integrate seamlessly with existing **SAST (Semgrep)**, **SCA (Trivy)**, and **DAST (OWASP ZAP)** DevSecOps reporting dashboards.
 
 ---
 
-## Architecture & Data Flow
+## Closed-Loop Architecture
 
 ```text
-┌─────────────────────┐      ┌──────────────────────┐      ┌──────────────────────────┐
-│  Target LLM / RAG   │─────▶│    NVIDIA Garak      │─────▶│    garak_to_sarif.py     │
-│  (Ollama / OpenAI)  │      │  (Adversarial Probes)│      │ (OWASP LLM / CWE Mapper) │
-└─────────────────────┘      └──────────────────────┘      └────────────┬─────────────┘
-                                                                        │
-                                                                        ▼
-┌─────────────────────┐      ┌──────────────────────┐      ┌──────────────────────────┐
-│  VictFlow Unified   │◀─────│ triaged_findings.sarif│◀─────│   ai_sarif_triage.py     │
-│   Audit Dashboard   │      │ (Enriched JSON Schema)│      │ (Local LLM Risk Triage)  │
-└─────────────────────┘      └──────────────────────┘      └──────────────────────────┘
+                    ┌───────────────────────────────────────────┐
+                    │         1. ADVERSARIAL RED TEAMING        │
+                    │  NVIDIA Garak (probes.encoding.InjectB64) │
+                    └─────────────────────┬─────────────────────┘
+                                          │
+                    ┌─────────────────────▼─────────────────────┐
+                    │         2. SARIF & LOCAL AI TRIAGE        │
+                    │  garak_to_sarif.py ──▶ ai_sarif_triage.py │
+                    │  (OWASP LLM / CWE + Local Qwen 2.5 JSON)  │
+                    └─────────────────────┬─────────────────────┘
+                                          │
+                    ┌─────────────────────▼─────────────────────┐
+                    │    3. RUNTIME AI FIREWALL MICROSERVICE    │
+                    │  firewall_server.py (FastAPI :8000/v1)    │
+                    │  • Base64 Payload Decoder                 │
+                    │  • Protect AI DeBERTa-v3 Injection Filter │
+                    │  • Regex Secret & Exfiltration Scrubber   │
+                    └─────────────────────┬─────────────────────┘
+                                          │
+                    ┌─────────────────────▼─────────────────────┐
+                    │       4. TARGET INFERENCE ENGINE          │
+                    │       Ollama Local LLM (qwen2.5:3b)       │
+                    └───────────────────────────────────────────┘
